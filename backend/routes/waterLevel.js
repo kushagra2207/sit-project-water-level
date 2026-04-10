@@ -1,11 +1,27 @@
 const express = require("express");
 const WaterLevel = require("../models/WaterLevel");
 const auth = require("../middleware/auth");
+const mongoose = require("mongoose");
 
 const router = express.Router();
 
+function ensureDatabaseAvailable(res) {
+  if (mongoose.connection.readyState === 1) {
+    return true;
+  }
+
+  res.status(503).json({
+    message: "Water level database is not available right now.",
+  });
+  return false;
+}
+
 // POST /api/water-level — ESP32 sends data here
 router.post("/", async (req, res) => {
+  if (!ensureDatabaseAvailable(res)) {
+    return;
+  }
+
   try {
     const { controller_id, water_level, percentage } = req.body;
 
@@ -36,6 +52,10 @@ router.post("/", async (req, res) => {
 
 // GET /api/water-level — Fetch all records (protected, for frontend)
 router.get("/", async (req, res) => {
+  if (!ensureDatabaseAvailable(res)) {
+    return;
+  }
+
   try {
     const { limit = 100, page = 1, sort = "desc" } = req.query;
 
@@ -66,6 +86,10 @@ router.get("/", async (req, res) => {
 
 // GET /api/water-level/latest — Get the most recent reading
 router.get("/latest", async (req, res) => {
+  if (!ensureDatabaseAvailable(res)) {
+    return;
+  }
+
   try {
     const latest = await WaterLevel.findOne().sort({ timestamp: -1 });
 
