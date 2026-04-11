@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include "config.h"
 
 #define TRIG 5
@@ -46,22 +47,43 @@ float getDistance() {
 
 // -------- API --------
 bool sendData(float litres, float percent) {
-  if (WiFi.status() != WL_CONNECTED) return false;
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi not connected");
+    return false;
+  }
+
+  WiFiClientSecure client;
+  client.setInsecure();   // allow HTTPS without certificate validation
 
   HTTPClient http;
-  http.begin(SERVER_URL);
+
+  http.begin(client, SERVER_URL);
+
   http.addHeader("Content-Type", "application/json");
 
   String payload = "{";
-  payload += "\"litres\":" + String(litres, 2) + ",";
+  payload += "\"controller_id\":\"ESP32_TANK_1\",";
+  payload += "\"water_level\":" + String(litres, 2) + ",";
   payload += "\"percentage\":" + String(percent, 2);
   payload += "}";
 
-  int code = http.POST(payload);
+  Serial.println("Sending:");
+  Serial.println(payload);
+
+  int httpCode = http.POST(payload);
+
+  Serial.print("HTTP Code: ");
+  Serial.println(httpCode);
+
+  String response = http.getString();
+
+  Serial.println("Response:");
+  Serial.println(response);
 
   http.end();
 
-  return (code > 0 && code < 400);
+  return (httpCode > 0 && httpCode < 400);
 }
 
 // -------- Setup --------
