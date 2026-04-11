@@ -24,11 +24,11 @@ export function formatWaterLevel(value) {
 export function getLevelStatus(percentage) {
   const numericValue = Number(percentage ?? 0);
 
-  if (numericValue >= 70) {
+  if (numericValue >= 80) {
     return { tone: "safe", label: "Safe" };
   }
 
-  if (numericValue >= 35) {
+  if (numericValue >= 20) {
     return { tone: "warning", label: "Attention" };
   }
 

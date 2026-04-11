@@ -9,7 +9,7 @@ import { SummaryCard } from "../components/dashboard/SummaryCard";
 import { WaterLevelGauge } from "../components/dashboard/WaterLevelGauge";
 import { useAuth } from "../hooks/useAuth";
 import { useWaterLevel } from "../hooks/useWaterLevel";
-import { APP_NAME } from "../utils/constants";
+import { APP_NAME, ANOMALY_THRESHOLD } from "../utils/constants";
 import { formatPercentage, formatWaterLevel } from "../utils/formatters";
 
 function DashboardPage({ controllerId, onBack }) {
@@ -64,6 +64,22 @@ function DashboardPage({ controllerId, onBack }) {
         </div>
       ) : null}
 
+      {insights.anomalyCount > 0 ? (
+        <div className="anomaly-banner">
+          <div className="anomaly-banner__icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </div>
+          <div className="anomaly-banner__body">
+            <strong>Anomaly detected — Possible pipe burst</strong>
+            <p>{insights.anomalyCount} {insights.anomalyCount === 1 ? "reading" : "readings"} showed a drop of {ANOMALY_THRESHOLD}%+ from the previous value. Check the history table below for flagged entries.</p>
+          </div>
+        </div>
+      ) : null}
+
       <section className="summary-grid">
         <SummaryCard
           title="Latest water level"
@@ -103,7 +119,7 @@ function DashboardPage({ controllerId, onBack }) {
         description={isLoading ? "Loading the newest readings from the backend..." : "Recent readings captured from this controller."}
       />
 
-      <HistoryTable rows={history} onRetry={refreshData} />
+      <HistoryTable rows={history} anomalyIds={insights.anomalyIds} onRetry={refreshData} />
     </PageShell>
   );
 }

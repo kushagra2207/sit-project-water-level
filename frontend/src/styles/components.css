@@ -693,6 +693,74 @@ td {
   }
 }
 
+/* ── Anomaly detection ── */
+
+.anomaly-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(217, 95, 95, 0.08), rgba(217, 95, 95, 0.04));
+  border: 1px solid rgba(217, 95, 95, 0.25);
+  animation: fadeSlideUp 0.35s ease both;
+}
+
+.anomaly-banner__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(217, 95, 95, 0.12);
+  color: var(--color-danger);
+}
+
+.anomaly-banner__body strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+  color: var(--color-danger);
+}
+
+.anomaly-banner__body p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--color-text-soft);
+}
+
+.anomaly-row {
+  background: rgba(217, 95, 95, 0.05);
+  border-left: 3px solid var(--color-danger);
+}
+
+.anomaly-row td {
+  border-bottom-color: rgba(217, 95, 95, 0.15);
+}
+
+.anomaly-alert-row td {
+  padding: 0;
+  border-bottom-color: rgba(217, 95, 95, 0.12);
+  background: rgba(217, 95, 95, 0.03);
+}
+
+.anomaly-inline-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+.anomaly-inline-alert svg {
+  flex-shrink: 0;
+}
+
 /* ── Responsive ── */
 
 @media (max-width: 1120px) {

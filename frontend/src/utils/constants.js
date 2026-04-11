@@ -10,3 +10,7 @@ export const LEVEL_LABELS = {
   warning: "Attention",
   critical: "Critical",
 };
+
+// Minimum percentage-point drop between two consecutive readings
+// to flag as a possible pipe burst. Adjust this value as needed.
+export const ANOMALY_THRESHOLD = 30;
