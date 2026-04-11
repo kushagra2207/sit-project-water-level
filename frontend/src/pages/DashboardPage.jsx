@@ -10,7 +10,7 @@ import { WaterLevelGauge } from "../components/dashboard/WaterLevelGauge";
 import { useAuth } from "../hooks/useAuth";
 import { useWaterLevel } from "../hooks/useWaterLevel";
 import { APP_NAME } from "../utils/constants";
-import { formatPercentage } from "../utils/formatters";
+import { formatPercentage, formatWaterLevel } from "../utils/formatters";
 
 function DashboardPage({ controllerId, onBack }) {
   const { user, logout } = useAuth();
@@ -66,21 +66,21 @@ function DashboardPage({ controllerId, onBack }) {
 
       <section className="summary-grid">
         <SummaryCard
+          title="Latest water level"
+          value={formatWaterLevel(latestReading?.water_level)}
+          detail="Most recent sensor reading in litres"
+          accent="water"
+        />
+        <SummaryCard
           title="Latest fill percentage"
           value={formatPercentage(latestReading?.percentage)}
           detail="Most recent reservoir capacity reading"
-          accent="water"
+          accent="teal"
         />
         <SummaryCard
           title="Average of recent records"
           value={formatPercentage(insights.averagePercentage)}
           detail="Calculated from the latest fetched history"
-          accent="teal"
-        />
-        <SummaryCard
-          title="Controller ID"
-          value={controllerId}
-          detail="Currently selected controller"
           accent="sand"
         />
         <SummaryCard

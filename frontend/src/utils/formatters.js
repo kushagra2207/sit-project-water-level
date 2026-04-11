@@ -18,7 +18,7 @@ export function formatPercentage(value) {
 
 export function formatWaterLevel(value) {
   const numericValue = Number(value ?? 0);
-  return `${numericValue.toFixed(2)} cm`;
+  return `${numericValue.toFixed(2)} L`;
 }
 
 export function getLevelStatus(percentage) {
