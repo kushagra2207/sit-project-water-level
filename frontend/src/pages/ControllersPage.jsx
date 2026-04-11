@@ -39,6 +39,13 @@ function ControllersPage({ onSelectController }) {
         eyebrow="Controllers"
         title="Select a controller"
         description="Choose one of the registered controllers to view its dashboard."
+        action={
+          !isLoading && controllerIds.length > 0 ? (
+            <span className="controller-count-badge">
+              {controllerIds.length} {controllerIds.length === 1 ? "controller" : "controllers"} found
+            </span>
+          ) : null
+        }
       />
 
       {error ? (
@@ -58,8 +65,11 @@ function ControllersPage({ onSelectController }) {
       ) : null}
 
       {isLoading ? (
-        <div className="card">
-          <p className="section-description">Loading controllers...</p>
+        <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+          <div className="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <p className="section-description" style={{ marginTop: "16px", marginBottom: 0 }}>Fetching controllers...</p>
         </div>
       ) : !error && controllerIds.length === 0 ? (
         <EmptyState
@@ -69,14 +79,15 @@ function ControllersPage({ onSelectController }) {
         />
       ) : (
         <div className="controller-grid">
-          {controllerIds.map((id) => (
+          {controllerIds.map((id, index) => (
             <button
               key={id}
               className="controller-card"
               onClick={() => onSelectController(id)}
+              style={{ animationDelay: `${index * 60}ms` }}
             >
               <div className="controller-card__icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
                   <line x1="8" y1="21" x2="16" y2="21" />
                   <line x1="12" y1="17" x2="12" y2="21" />
@@ -85,7 +96,12 @@ function ControllersPage({ onSelectController }) {
               <div className="controller-card__body">
                 <p className="eyebrow">Controller</p>
                 <h3>{id}</h3>
-                <p className="controller-card__action">View dashboard →</p>
+              </div>
+              <div className="controller-card__arrow">
+                <span className="controller-card__status-dot"></span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </div>
             </button>
           ))}

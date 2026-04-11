@@ -1,19 +1,30 @@
 import { Card } from "../common/Card";
 
 const tips = [
-  "Use the latest reading card to verify whether the controller is reporting fresh data.",
-  "Watch the history table for sudden drops that may indicate leakage or abnormal discharge.",
-  "When the percentage enters the critical range, backend alerts can later be added in the connector layer.",
+  {
+    icon: "💡",
+    text: "The gauge shows real-time fill level — look for sudden drops that may indicate leakage.",
+  },
+  {
+    icon: "📊",
+    text: "The history table updates on refresh — use it to spot trends or abnormal discharge patterns.",
+  },
+  {
+    icon: "⚠️",
+    text: "Status badges change color when the water level enters warning or critical ranges.",
+  },
 ];
 
 export function QuickTips() {
   return (
     <Card className="tips-card">
-      <p className="eyebrow">Operational Notes</p>
-      <h3>How this frontend is organized</h3>
+      <p className="eyebrow">Quick Tips</p>
+      <h3>What to look for</h3>
       <ul className="tips-list">
         {tips.map((tip) => (
-          <li key={tip}>{tip}</li>
+          <li key={tip.text}>
+            <span className="tip-icon">{tip.icon}</span> {tip.text}
+          </li>
         ))}
       </ul>
     </Card>
