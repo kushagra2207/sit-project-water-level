@@ -5,7 +5,7 @@ import {
 } from "../connectors/backend/waterLevelConnector";
 import { getLevelStatus } from "../utils/formatters";
 
-export function useWaterLevel() {
+export function useWaterLevel(controllerId) {
   const [latestReading, setLatestReading] = useState(null);
   const [history, setHistory] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -14,6 +14,10 @@ export function useWaterLevel() {
   const [notice, setNotice] = useState("");
 
   const loadData = useCallback(async () => {
+    if (!controllerId) {
+      return;
+    }
+
     setIsLoading(true);
     setError("");
     setNotice("");
@@ -21,7 +25,7 @@ export function useWaterLevel() {
     try {
       const [latestResponse, historyResponse] = await Promise.all([
         getLatestWaterLevelRequest(),
-        getWaterLevelHistoryRequest(),
+        getWaterLevelHistoryRequest(controllerId),
       ]);
 
       setLatestReading(latestResponse.data);
@@ -41,7 +45,7 @@ export function useWaterLevel() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [controllerId]);
 
   useEffect(() => {
     loadData();

@@ -12,16 +12,16 @@ import { useWaterLevel } from "../hooks/useWaterLevel";
 import { APP_NAME } from "../utils/constants";
 import { formatPercentage } from "../utils/formatters";
 
-function DashboardPage() {
+function DashboardPage({ controllerId, onBack }) {
   const { user, logout } = useAuth();
-  const { latestReading, history, insights, error, notice, isLoading, refreshData } = useWaterLevel();
+  const { latestReading, history, insights, error, notice, isLoading, refreshData } = useWaterLevel(controllerId);
 
   const sidebar = (
     <div className="sidebar-card">
       <p className="eyebrow">Monitoring Console</p>
       <h1>{APP_NAME}</h1>
       <p className="sidebar-copy">
-        Follow the latest water level activity, review recent readings, and keep your controller data in one place.
+        Viewing data for controller <strong>{controllerId}</strong>. Use the back button to switch controllers.
       </p>
 
       <div className="sidebar-profile">
@@ -31,6 +31,7 @@ function DashboardPage() {
       </div>
 
       <div className="sidebar-actions">
+        <Button onClick={onBack} variant="secondary">← All controllers</Button>
         <Button onClick={refreshData}>Refresh data</Button>
         <Button onClick={logout} variant="ghost">
           Logout
@@ -42,9 +43,9 @@ function DashboardPage() {
   return (
     <PageShell sidebar={sidebar}>
       <SectionHeader
-        eyebrow="Dashboard"
+        eyebrow={`Controller ${controllerId}`}
         title="Water level overview"
-        description="A simple frontend structure that keeps UI, state, and backend connectors separated for easier future development."
+        description="Live readings and recent history for this controller."
       />
 
       {error ? (
@@ -77,15 +78,15 @@ function DashboardPage() {
           accent="teal"
         />
         <SummaryCard
-          title="Connected controllers"
-          value={String(insights.activeControllers || 0)}
-          detail="Unique controller IDs in the recent history list"
+          title="Controller ID"
+          value={controllerId}
+          detail="Currently selected controller"
           accent="sand"
         />
         <SummaryCard
           title="Stored records"
           value={String(insights.totalRecords || 0)}
-          detail="Total records reported by the backend pagination"
+          detail="Total records for this controller"
           accent="navy"
         />
       </section>
@@ -99,7 +100,7 @@ function DashboardPage() {
       <SectionHeader
         eyebrow="Recent History"
         title="Latest sensor entries"
-        description={isLoading ? "Loading the newest readings from the backend..." : "Recent readings captured from your controller data source."}
+        description={isLoading ? "Loading the newest readings from the backend..." : "Recent readings captured from this controller."}
       />
 
       <HistoryTable rows={history} onRetry={refreshData} />
