@@ -50,24 +50,45 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET /api/water-level — Fetch all records (protected, for frontend)
-router.get("/", async (req, res) => {
+// GET /api/water-level/controllers — Fetch unique controller IDs
+router.get("/controllers", async (req, res) => {
   if (!ensureDatabaseAvailable(res)) {
     return;
   }
 
   try {
+    const controllerIds = await WaterLevel.distinct("controller_id");
+
+    res.json({
+      message: "Controller IDs fetched successfully.",
+      data: controllerIds,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch controller IDs.", error: error.message });
+  }
+});
+
+// GET /api/water-level/controller/:controllerId — Fetch data for a specific controller
+router.get("/controller/:controllerId", async (req, res) => {
+  if (!ensureDatabaseAvailable(res)) {
+    return;
+  }
+
+  try {
+    const { controllerId } = req.params;
     const { limit = 100, page = 1, sort = "desc" } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
     const sortOrder = sort === "asc" ? 1 : -1;
 
-    const records = await WaterLevel.find()
+    const filter = { controller_id: controllerId };
+
+    const records = await WaterLevel.find(filter)
       .sort({ timestamp: sortOrder })
       .skip(skip)
       .limit(Number(limit));
 
-    const total = await WaterLevel.countDocuments();
+    const total = await WaterLevel.countDocuments(filter);
 
     res.json({
       message: "Water level data fetched successfully.",
