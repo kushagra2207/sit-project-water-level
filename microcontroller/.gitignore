@@ -1,0 +1,26 @@
+# WiFi and server credentials
+config.h
+*.local.h
+
+# PlatformIO build directories and caches
+.pio/
+.pioenvs/
+.piolibdeps/
+.clangd/
+
+# Arduino and C++ compiled binaries and build artifacts
+build/
+*.bin
+*.hex
+*.elf
+*.o
+*.d
+*.tmp
+
+# VS Code / IDE temporary files
+.vscode/.browse.c_cpp.db*
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+

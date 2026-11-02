@@ -1,309 +1,117 @@
-# SIT Project Water Level
+# SIT Water Level Monitor
 
-A water-level monitoring project with:
+A smart IoT water-level monitoring system with pipe-burst detection. It measures water levels using an ultrasonic sensor, sends the data to a Node.js backend, and displays real-time readings on a React dashboard.
 
-- a `Node.js + Express` backend
-- a `React + Vite` frontend
-- a login-first dashboard flow
-- optional MongoDB storage for water-level readings
+---
 
-The login system does **not** require MongoDB. MongoDB is only needed for storing and fetching real water-level data.
+## Project Overview
 
-## Overview
+The project is divided into three simple parts:
 
-This project has two main parts:
+### 1. Microcontroller (`microcontroller/`)
+- Runs on an **ESP32** connected to an **HC-SR04 ultrasonic sensor**.
+- Measures distance to calculate water height, percentage, and litres (calibrated for a 200 cm / 2000 L tank).
+- Has 3 status LEDs:
+  - **Red LED** (GPIO 25): Overflow alert ($\ge$ 195 cm)
+  - **Blue LED** (GPIO 26): Low water alert ($\le$ 10 cm)
+  - **Green LED** (GPIO 27): Server status (lights up when data sends successfully)
+- Sends readings to the backend every 5 seconds over WiFi.
+- Includes a ready-to-run **Wokwi simulation** (`diagram.json`).
 
-- `backend/`: API server for login and water-level endpoints
-- `frontend/`: React dashboard UI
+### 2. Backend (`backend/`)
+- Built with **Node.js & Express**.
+- Ingests readings from the ESP32 and stores them in **MongoDB**.
+- Provides JWT-based login for the dashboard.
+- *Note:* The login works even if MongoDB is not connected; MongoDB is only needed to save and fetch water-level history.
 
-### Current behavior
+### 3. Frontend (`frontend/`)
+- Built with **React & Vite**.
+- **Login screen**: Authenticates with backend admin credentials.
+- **Controller selection**: Allows choosing between multiple reporting controllers/tanks.
+- **Live dashboard**: Displays a visual water gauge, current litres, percentage, and status (Safe, Attention, Critical).
+- **Pipe-burst detection**: Flags sudden drops ($\ge$ 30%) between readings with a warning banner and table highlights.
+- **History table**: Shows timestamped previous readings.
 
-- Login works using environment variables only
-- Login data is **not stored in MongoDB**
-- Water-level data is fetched from MongoDB when available
-- If MongoDB is connected but no records exist, the dashboard shows an empty state
-- If MongoDB is not connected, login still works but real water-level data will not appear
+---
 
-## Project Structure
+## How to Set It Up
 
-```text
-sit_project_water_level/
-|-- backend/
-|   |-- middleware/
-|   |   `-- auth.js
-|   |-- models/
-|   |   `-- WaterLevel.js
-|   |-- routes/
-|   |   |-- auth.js
-|   |   `-- waterLevel.js
-|   |-- .env.example
-|   |-- package.json
-|   `-- server.js
-|-- frontend/
-|   |-- public/
-|   |-- src/
-|   |   |-- app/                  # App wrappers and protected app flow
-|   |   |-- components/
-|   |   |   |-- common/           # Buttons, cards, layout helpers
-|   |   |   |-- dashboard/        # Dashboard-specific components
-|   |   |   `-- forms/            # Login form
-|   |   |-- connectors/
-|   |   |   `-- backend/          # Frontend-to-backend connector files
-|   |   |-- context/              # Auth context
-|   |   |-- hooks/                # Reusable logic hooks
-|   |   |-- pages/                # Login page and dashboard page
-|   |   |-- services/
-|   |   |   `-- http/             # Shared API client
-|   |   |-- styles/               # Theme and UI styling
-|   |   `-- utils/                # Constants and helpers
-|   |-- .env.example
-|   |-- package.json
-|   `-- vite.config.js
-|-- .gitignore
-`-- README.md
+### 1. Backend Setup
+
+```bash
+cd backend
+npm install
 ```
 
-## Frontend Flow
-
-1. User opens the application
-2. First page is the login page
-3. User logs in with backend credentials
-4. After login, user enters the main dashboard
-5. Dashboard tries to load real water-level data from backend
-
-## Tech Stack
-
-### Frontend
-
-- React
-- Vite
-- CSS
-
-### Backend
-
-- Node.js
-- Express
-- JSON Web Token (`jsonwebtoken`)
-- MongoDB with Mongoose
-
-## Backend Environment Setup
-
-Create a file named `backend/.env`.
-
-Example:
-
+Create a `.env` file inside the `backend/` folder:
 ```env
 PORT=5000
-JWT_SECRET=replace_with_a_secure_secret
+JWT_SECRET=mysecretkey123
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 MONGODB_URI=mongodb://127.0.0.1:27017/sit_water_level
 ```
 
-### Important
+Run the backend:
+```bash
+npm run dev
+```
+Server will start on `http://localhost:5000`.
 
-- `ADMIN_USERNAME` and `ADMIN_PASSWORD` are used for login
-- `JWT_SECRET` is required for token generation
-- `MONGODB_URI` is used only for water-level data
-- If `MONGODB_URI` is empty or MongoDB is unavailable, login still works
+---
 
-## Frontend Environment Setup
+### 2. Frontend Setup
 
-Create a file named `frontend/.env`.
+Open a new terminal:
+```bash
+cd frontend
+npm install
+```
 
-Example:
-
+Create a `.env` file inside the `frontend/` folder:
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
-## Installation
-
-### Backend
-
+Run the frontend:
 ```bash
-cd backend
-npm install
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-```
-
-## Running the Project
-
-Open two terminals.
-
-### Terminal 1: Start backend
-
-```bash
-cd backend
 npm run dev
 ```
+Open `http://localhost:5173` in your browser.
 
-Expected output:
+**Default Login:**
+- Username: `admin`
+- Password: `admin123`
 
-```text
-Server running on http://localhost:5000
+---
+
+### 3. Microcontroller Setup
+
+Create `microcontroller/config.h` (copy from `config.example.h`):
+```cpp
+#ifndef CONFIG_H
+#define CONFIG_H
+
+const char* WIFI_SSID = "Wokwi-GUEST"; // or your WiFi name
+const char* WIFI_PASSWORD = "";        // your WiFi password
+const char* SERVER_URL = "http://<YOUR_BACKEND_IP>:5000/api/water-level";
+
+#endif
 ```
 
-If MongoDB is connected correctly, you should also see:
+- **In Wokwi (Simulation)**: Open `microcontroller/diagram.json` in VS Code with the Wokwi extension (or on [wokwi.com](https://wokwi.com)) and click Play.
+- **On Physical Hardware**: Connect the ESP32, wire the sensor (`TRIG` to GPIO 5, `ECHO` to GPIO 18) and LEDs (GPIO 25, 26, 27 with 220Ω resistors), then flash `main.cpp` via Arduino IDE or PlatformIO.
 
-```text
-Connected to MongoDB
-```
+---
 
-### Terminal 2: Start frontend
+## Quick Test Without Hardware
+
+You can test the dashboard by sending a dummy reading using PowerShell or cURL:
 
 ```bash
-cd frontend
-npm run dev
+curl -X POST http://localhost:5000/api/water-level \
+  -H "Content-Type: application/json" \
+  -d "{\"controller_id\": \"ESP32_TANK_1\", \"water_level\": 1500, \"percentage\": 75}"
 ```
 
-Then open the local Vite URL shown in the terminal, usually:
-
-```text
-http://localhost:5173
-```
-
-## Login Details
-
-The login page checks credentials from `backend/.env`.
-
-Example:
-
-- username: `admin`
-- password: `admin123`
-
-These login details are **not stored in MongoDB**.
-
-## How Frontend Connects to Backend
-
-The main frontend-to-backend connection is handled in:
-
-- [frontend/src/services/http/apiClient.js](C:\Users\HP\Downloads\Projects\SIT\sit_project_water_level\frontend\src\services\http\apiClient.js)
-
-The connector files are:
-
-- [frontend/src/connectors/backend/authConnector.js](C:\Users\HP\Downloads\Projects\SIT\sit_project_water_level\frontend\src\connectors\backend\authConnector.js)
-- [frontend/src/connectors/backend/waterLevelConnector.js](C:\Users\HP\Downloads\Projects\SIT\sit_project_water_level\frontend\src\connectors\backend\waterLevelConnector.js)
-
-### Flow
-
-```text
-React Page / Hook
--> connector file
--> shared apiClient
--> backend API route
--> backend response
-```
-
-## Backend Routes
-
-### Auth routes
-
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-
-These routes work without MongoDB.
-
-### Water level routes
-
-- `POST /api/water-level`
-- `GET /api/water-level`
-- `GET /api/water-level/latest`
-
-These routes use MongoDB for storing and reading water-level data.
-
-## How To Show Real Data On Dashboard
-
-MongoDB alone is not enough. The database must also contain water-level records.
-
-You can insert a test record manually:
-
-```powershell
-Invoke-RestMethod `
-  -Uri "http://localhost:5000/api/water-level" `
-  -Method Post `
-  -ContentType "application/json" `
-  -Body '{"controller_id":"ESP32_01","water_level":24.5,"percentage":68}'
-```
-
-After inserting data:
-
-- refresh the dashboard
-- latest reading should update
-- stored record count should increase
-- history table should show entries
-
-## Dashboard Behavior
-
-### When MongoDB is not connected
-
-- login works
-- dashboard opens
-- water-level section shows fallback / unavailable state
-
-### When MongoDB is connected but empty
-
-- login works
-- dashboard opens
-- page shows messages like `No water level data found`
-- history table remains empty
-
-### When MongoDB is connected and records exist
-
-- dashboard shows real values from backend
-- latest reading panel shows controller, level, percentage, and timestamp
-- history table shows recent data
-
-## Troubleshooting
-
-### Login button shows `Failed to fetch`
-
-Possible reasons:
-
-- backend is not running
-- `frontend/.env` has wrong API URL
-- backend is running on a different port
-
-Check:
-
-```bash
-http://localhost:5000/
-```
-
-You should get a JSON response from the backend.
-
-### Backend says MongoDB connection error
-
-Check:
-
-- MongoDB service is running
-- `MONGODB_URI` is correct in `backend/.env`
-
-For local MongoDB on Windows:
-
-```powershell
-Get-Service MongoDB
-Start-Service MongoDB
-```
-
-### Dashboard shows `No water level data found`
-
-This usually means:
-
-- MongoDB is connected
-- but there are no records in the `water_levels` collection yet
-
-Insert a test record using the API and refresh the page.
-
-## Notes
-
-- The frontend is structured so UI, hooks, connectors, and services are separated clearly
-- Login is intentionally independent from the database
-- The dashboard UI uses water-inspired colors to match the project theme
-- The connector layer makes future backend integration easier
+Then log in to the frontend, select `ESP32_TANK_1`, and your reading will appear!
